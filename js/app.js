@@ -26,7 +26,13 @@ class Presupuesto{
     {
         this.presupuesto = Number(presupuesto);
         this.restante = presupuesto;
-        this.gastos = presupuesto;
+        this.gastos = [];
+    }
+
+    nuevoGasto(gastos)
+    {
+        this.gastos = [...this.gastos,gastos];
+        console.log(this.gastos);
     }
 }
 
@@ -96,4 +102,15 @@ function agregarGasto(e){
         ui.imprimirAlerta('Cantidad no Válida','error');
         return;
     }
+
+    const gastos = {
+        gasto,
+        cantidad,
+        id : Date.now()
+    }
+
+    presupuesto.nuevoGasto(gastos);
+
+    ui.imprimirAlerta('Gasto Agregado Correctamente');
+    formulario.reset();
 }
