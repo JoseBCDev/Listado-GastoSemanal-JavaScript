@@ -32,9 +32,14 @@ class Presupuesto{
     nuevoGastos(gastos)
     {
         this.gastos = [...this.gastos,gastos];
-       
+       this.calcularRestante();
     }
 
+    calcularRestante()
+    {
+        const gastado = this.gastos.reduce((total,gastos)=> total + gastos.cantidad,0);
+        this.restante = this.presupuesto - gastado;
+    }
 }
 
 class UI{
@@ -100,6 +105,11 @@ class UI{
                     gastoListado.removeChild(gastoListado.firstChild);
                 }
             }
+       actualizarRestante(restante)
+        {
+            document.querySelector('#restante').textContent = restante;
+        }
+        
 }
 
 //Instanciar Objetos
@@ -127,7 +137,7 @@ function agregarGasto(e){
     e.preventDefault();
     
     const gasto = document.querySelector('#gasto').value;
-    const cantidad = document.querySelector('#cantidad').value;
+    const cantidad = Number(document.querySelector('#cantidad').value);
     
     if(gasto === '' || cantidad === ''){
         ui.imprimirAlerta('Ambos campos son Obligatorios','error');
@@ -148,6 +158,8 @@ function agregarGasto(e){
     ui.imprimirAlerta('Gasto Agregado Correctamente');
     formulario.reset();
 
-    const {gastos} = presupuesto;
+    const {gastos,restante} = presupuesto;
     ui.agregarGastoListado(gastos);
+
+     ui.actualizarRestante(restante);
 }
