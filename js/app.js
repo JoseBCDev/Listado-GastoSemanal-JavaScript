@@ -21,6 +21,7 @@ function eventListener(){
 
 //Classes
 
+//Clase Presupuesto
 class Presupuesto{
     constructor(presupuesto)
     {
@@ -28,22 +29,29 @@ class Presupuesto{
         this.restante = presupuesto;
         this.gastos = [];
     }
-
+//Agregar nuevo Gasto a la lista
     nuevoGastos(gastos)
     {
         this.gastos = [...this.gastos,gastos];
        this.calcularRestante();
     }
-
+//Calcula el Resto de lo que se va gastando
     calcularRestante()
     {
         const gastado = this.gastos.reduce((total,gastos)=> total + gastos.cantidad,0);
         this.restante = this.presupuesto - gastado;
     }
+//Elimina un Gasto de acuerdo al boton
+    eliminarGasto(id)
+    {
+    //Filtra todo el array gasto y se qedan todos los q sean diferentes al ID
+        this.gastos = this.gastos.filter(gasto=>gasto.id != id);
+        this.calcularRestante();
+    }
 }
-
+//Clase para Diseño
 class UI{
-
+//Permite ver el presupuesto y el Restante en la lista
         insertarPresupuesto(cantidad)
         {
            const {presupuesto,restante} = cantidad;
@@ -51,7 +59,7 @@ class UI{
            document.querySelector('#total').textContent = presupuesto;
            document.querySelector('#restante').textContent = restante;
         }
-
+//Imprime una alerta por cada ingreso de datos o error de validaciones
         imprimirAlerta(mensaje,tipo){
             const divMensaje = document.createElement('div');
             divMensaje.classList.add('text-center','alert');
@@ -71,8 +79,8 @@ class UI{
                 divMensaje.remove();
             }, 3000);
         }
-
-        agregarGastoListado(gastoObj)
+//Muestra los gastos Listados
+        mostrarGasto(gastoObj)
             {
                 this.limpiarHTML();
 
@@ -88,6 +96,9 @@ class UI{
 
                     const btnBorrar = document.createElement('button');
                     btnBorrar.classList.add('btn','btn-danger','borrar-gasto');
+                    btnBorrar.onclick = ()=>{
+                       eliminarGasto(id); 
+                    };
                     btnBorrar.innerHTML = `Borrar &times;`;
 
                     nuevoGasto.appendChild(btnBorrar);
@@ -98,18 +109,19 @@ class UI{
                 });
                 
             }
-
+//Limpia la lista de los Gastos en cola
         limpiarHTML()
             {
                 while (gastoListado.firstChild) {
                     gastoListado.removeChild(gastoListado.firstChild);
                 }
             }
+//Muestra cuanto queda de Presupuesto
        actualizarRestante(restante)
         {
             document.querySelector('#restante').textContent = restante;
         }
-        
+//Comprueba si el Presupuesto se encuentra dentro del rango a traves de colores       
         comprobarPresupuesto(presupuestoObj)
         {
             const {presupuesto,restante} = presupuestoObj;
@@ -123,6 +135,9 @@ class UI{
             }else if((presupuesto/2) > restante){
                 restanteDiv.classList.remove('alert-success');
                 restanteDiv.classList.add('alert-warning');
+            }else{
+                restanteDiv.classList.remove('alert-warning','alert-danger');
+                restanteDiv.classList.add('alert-success');
             }
 
             if(restante<0)
@@ -140,7 +155,7 @@ let presupuesto;
 
 
 //Funciones
-
+//Pregunta el Presupuesto al inicio de  ingresar a la pagina
 function preguntarPresupuesto(){
     const presupuestoUsuario = prompt('¿Cual es presupuesto?');
 
@@ -153,13 +168,13 @@ function preguntarPresupuesto(){
 
     ui.insertarPresupuesto(presupuesto);
 }
-
+//Agrega un gasto al Array Objeto Gastos[]
 function agregarGasto(e){
     e.preventDefault();
     
     const gasto = document.querySelector('#gasto').value;
     const cantidad = Number(document.querySelector('#cantidad').value);
-    
+    //valida que los datos no esten vacios
     if(gasto === '' || cantidad === ''){
         ui.imprimirAlerta('Ambos campos son Obligatorios','error');
         return;
@@ -167,22 +182,38 @@ function agregarGasto(e){
         ui.imprimirAlerta('Cantidad no Válida','error');
         return;
     }
-
+    //creacion de objeto literal
     const gastoObj = {
         gasto,
         cantidad,
         id : Date.now()
     }
-
+    //Agregando el nuevo gasto en la lista
     presupuesto.nuevoGastos(gastoObj);
-
+    //imprimiendo alerta de exito
     ui.imprimirAlerta('Gasto Agregado Correctamente');
-    formulario.reset();
-
+    formulario.reset(); //reinciando formulario
+    //destructuring al objeto presupuesto
     const {gastos,restante} = presupuesto;
-    ui.agregarGastoListado(gastos);
-
+    //Mostrando gasto en la lista
+    ui.mostrarGasto(gastos);
+    //Actualizando el restanto del presupuesto en pantalla
     ui.actualizarRestante(restante);
+    //Comprobando si gasto mas de lo normal
+    ui.comprobarPresupuesto(presupuesto);
+}
+//Eliminar un gasto cada click en el boton
+function eliminarGasto(id)
+{
+    //Eliminar el gasto
+    presupuesto.eliminarGasto(id);
 
+    //Destructuring al objeto
+    const {restante,gastos} = presupuesto;
+    //Muestra los gastos
+    ui.mostrarGasto(gastos);
+    //Actualiza
+    ui.actualizarRestante(restante);
+    //Verifica
     ui.comprobarPresupuesto(presupuesto);
 }
